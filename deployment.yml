@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: scheduler-app-deployment
+spec:
+  selector:
+    matchLabels:
+      app: scheduler-app
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: scheduler-app
+    spec:
+      containers:
+        - name: scheduler-web
+          image: mateusz7812/scheduler_react:0.7
+          ports:
+            - containerPort: 3000
+        - name: scheduler-server
+          image: mateusz7812/scheduler_server:0.4
+          ports:
+            - containerPort: 80
+        - name: zipkin-server
+          image: openzipkin/zipkin
+          ports:
+            - containerPort: 9411
+          env:
+            - name: STORAGE_TYPE
+              value: "mem"
+            - name: SELF_TRACING_ENABLED
+              value: "true"
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: scheduler-app-service
+spec:
+  selector:
+    app: scheduler-app
+  ports:
+    - protocol: TCP
+      targetPort: 3000
+      port: 3000
+      name: react-port
+    - protocol: TCP
+      targetPort: 80
+      port: 3001
+      name: server-port
+    - protocol: TCP
+      targetPort: 9411
+      port: 3002
+      name: zipkin-port
+  type: LoadBalancer
