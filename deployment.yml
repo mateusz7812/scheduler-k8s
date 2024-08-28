@@ -14,22 +14,82 @@ spec:
     spec:
       containers:
         - name: scheduler-web
-          image: mateusz7812/scheduler_react:0.7
+          image: mateusz7812/scheduler_react:latest
           ports:
             - containerPort: 3000
+          volumeMounts:
+              - name: config
+                mountPath: "/usr/share/nginx/html/config.js"
+                subPath: "config.js"
+          volumes:
+              - name: config
+                configMap:
+                    name: web-config
+                    items:
+                        - key: "web.properties"
+                          path: "config.js"
+          terminationGracePeriodSeconds: 10
+          env:
+            - name: MSAL_CLIENT_ID
+              value: "232cc6c8-2cba-4057-bd14-ee462bfe2dd1"
+            - name: REACT_APP_MSAL_AUTHORITY
+              value: "https://login.microsoftonline.com/7ff229c8-8063-4d45-a70f-1ad03cfbb293"
+            - name: REACT_APP_MSAL_REDIRECT_URL
+              value: "http://127.0.0.1:3000/login"
+            - name: REACT_APP_GRAPHQL_ADDRESS
+              value: "http://127.0.0.1:3003/graphql"
         - name: scheduler-server
-          image: mateusz7812/scheduler_server:0.4
+          image: mateusz7812/scheduler_service:latest
           ports:
-            - containerPort: 80
+            - containerPort: 3003
+          env:
+            - name: ZIPKIN_ADDRESS
+              value: http://127.0.0.1:9411
+            - name: APP_NAME
+              value: Schedule service
+            - name: LISTENING_PORT
+              value: "3003"
+        - name: scheduler-executor
+          image: mateusz7812/scheduler_executor:latest
+          env:
+            - name: ENVIRONMENT_VARIABLE_CONFIG
+              value: "true"
+            - name: GRAPHQL_SERVER_BASE_ADDRESS
+              value: http://127.0.0.1:3003/graphql
+            - name: GRAPHQL_SERVER_URI
+              value: ws://127.0.0.1:3003/graphql
+            - name: EXECUTOR_ID
+              value: "1"
+            - name: EXECUTOR_NAME
+              value: testName
+            - name: ACCOUNT_ID
+              value: "1"
+            - name: ACCOUNT_LOGIN
+              value: testLogin
+            - name: ZIPKIN_COLLECTOR_URL
+              value: http://127.0.0.1:9411
         - name: zipkin-server
           image: openzipkin/zipkin
           ports:
             - containerPort: 9411
           env:
             - name: STORAGE_TYPE
-              value: "mem"
+              value: mem
             - name: SELF_TRACING_ENABLED
               value: "true"
+        #- name: oracle-db
+        #  image: container-registry.oracle.com/database/free:latest
+        #  ports:
+        #    - containerPort: 1521
+        #  env:
+        #    - name: ORACLE_PWD
+        #      value: test123
+        #    - name: ORACLE_CHARACTERSET
+        #      value: AL32UTF8
+        #    - name: ORACLE_SID
+        #      value: ORCLCDB
+        #    - name: ORACLE_HOME
+        #      value: /opt/oracle/product/19c/dbhome_1
 ---
 kind: Service
 apiVersion: v1
@@ -41,14 +101,25 @@ spec:
   ports:
     - protocol: TCP
       targetPort: 3000
-      port: 3000
+      port: 80
       name: react-port
     - protocol: TCP
-      targetPort: 80
-      port: 3001
+      targetPort: 3003
+      port: 3003
       name: server-port
     - protocol: TCP
       targetPort: 9411
       port: 3002
       name: zipkin-port
+    #- protocol: TCP
+    #  targetPort: 1521
+    #  port: 3003
+    #  name: oracle-port
   type: LoadBalancer
+---
+kind: ConfigMap
+metadata:
+    name: web-config
+data:
+    web.properties: |
+        window.GRAPHQL_ADDRESS= "api.kubernetes.com"
