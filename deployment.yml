@@ -12,23 +12,23 @@ spec:
       labels:
         app: scheduler-app
     spec:
+      volumes:
+        - name: config
+          configMap:
+            name: web-config
+            items:
+              - key: "web.properties"
+                path: "config.js"
+      terminationGracePeriodSeconds: 10
       containers:
         - name: scheduler-web
           image: mateusz7812/scheduler_react:latest
           ports:
-            - containerPort: 3000
+            - containerPort: 80
           volumeMounts:
-              - name: config
-                mountPath: "/usr/share/nginx/html/config.js"
-                subPath: "config.js"
-          volumes:
-              - name: config
-                configMap:
-                    name: web-config
-                    items:
-                        - key: "web.properties"
-                          path: "config.js"
-          terminationGracePeriodSeconds: 10
+            - name: config
+              mountPath: "/usr/share/nginx/html/config.js"
+              subPath: "config.js"
           env:
             - name: MSAL_CLIENT_ID
               value: "232cc6c8-2cba-4057-bd14-ee462bfe2dd1"
@@ -90,36 +90,3 @@ spec:
         #      value: ORCLCDB
         #    - name: ORACLE_HOME
         #      value: /opt/oracle/product/19c/dbhome_1
----
-kind: Service
-apiVersion: v1
-metadata:
-  name: scheduler-app-service
-spec:
-  selector:
-    app: scheduler-app
-  ports:
-    - protocol: TCP
-      targetPort: 3000
-      port: 80
-      name: react-port
-    - protocol: TCP
-      targetPort: 3003
-      port: 3003
-      name: server-port
-    - protocol: TCP
-      targetPort: 9411
-      port: 3002
-      name: zipkin-port
-    #- protocol: TCP
-    #  targetPort: 1521
-    #  port: 3003
-    #  name: oracle-port
-  type: LoadBalancer
----
-kind: ConfigMap
-metadata:
-    name: web-config
-data:
-    web.properties: |
-        window.GRAPHQL_ADDRESS= "api.kubernetes.com"

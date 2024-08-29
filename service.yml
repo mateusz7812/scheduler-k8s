@@ -1,0 +1,21 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: scheduler-app-service
+spec:
+  selector:
+    app: scheduler-app
+  ports:
+    - protocol: TCP
+      targetPort: 80
+      port: 80
+      name: react-port
+    - protocol: TCP
+      targetPort: 3003
+      port: 3003
+      name: server-port
+    - protocol: TCP
+      targetPort: 9411
+      port: 3002
+      name: zipkin-port
+  type: LoadBalancer
