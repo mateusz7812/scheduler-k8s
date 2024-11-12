@@ -1,7 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-    name: web-config
-data:
-    web.properties: |
-        window.GRAPHQL_ADDRESS= "api.kubernetes.com"

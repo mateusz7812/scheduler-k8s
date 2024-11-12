@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+    name: web-config
+    namespace: scheduler
+data:
+    web.properties: |
+        window.GRAPHQL_ADDRESS= "https://schedulerapp.duckdns.org/service/graphql"
+        window.MSAL_CLIENT_ID = "232cc6c8-2cba-4057-bd14-ee462bfe2dd1"
+        window.MSAL_AUTHORITY = "https://login.microsoftonline.com/7ff229c8-8063-4d45-a70f-1ad03cfbb293"
+        window.MSAL_REDIRECT_URL = "https://schedulerapp.duckdns.org/login"

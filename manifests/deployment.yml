@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: scheduler-app-deployment
+  namespace: scheduler
 spec:
   selector:
     matchLabels:
@@ -19,27 +20,20 @@ spec:
             items:
               - key: "web.properties"
                 path: "config.js"
-      terminationGracePeriodSeconds: 10
+      terminationGracePeriodSeconds: 30
       containers:
         - name: scheduler-web
           image: mateusz7812/scheduler_react:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 80
           volumeMounts:
             - name: config
               mountPath: "/usr/share/nginx/html/config.js"
               subPath: "config.js"
-          env:
-            - name: MSAL_CLIENT_ID
-              value: "232cc6c8-2cba-4057-bd14-ee462bfe2dd1"
-            - name: REACT_APP_MSAL_AUTHORITY
-              value: "https://login.microsoftonline.com/7ff229c8-8063-4d45-a70f-1ad03cfbb293"
-            - name: REACT_APP_MSAL_REDIRECT_URL
-              value: "http://127.0.0.1:3000/login"
-            - name: REACT_APP_GRAPHQL_ADDRESS
-              value: "http://127.0.0.1:3003/graphql"
         - name: scheduler-server
           image: mateusz7812/scheduler_service:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 3003
           env:
@@ -51,6 +45,7 @@ spec:
               value: "3003"
         - name: scheduler-executor
           image: mateusz7812/scheduler_executor:latest
+          imagePullPolicy: Always
           env:
             - name: ENVIRONMENT_VARIABLE_CONFIG
               value: "true"

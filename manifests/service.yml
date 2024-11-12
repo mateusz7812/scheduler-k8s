@@ -2,6 +2,7 @@ kind: Service
 apiVersion: v1
 metadata:
   name: scheduler-app-service
+  namespace: scheduler
 spec:
   selector:
     app: scheduler-app
