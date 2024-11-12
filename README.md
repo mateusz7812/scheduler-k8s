@@ -3,3 +3,5 @@ Scheduler is a tool for IT administrators that enables remote execution of Power
 The files in this repo allow you to configure a Kubernetes cluster to run a simple setup with one web app, one service, and one executor. The plan is to migrate this configuration to Terraform files.
 
 The Azure pipeline updates existing k8s test cluster with latest changes in manifests files.
+
+More information can be found in other projects related to the Scheduler app.
